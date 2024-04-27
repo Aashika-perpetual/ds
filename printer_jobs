@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct {
+    int jobId; 
+    int length; 
+}queue;
+queue* initqueue(int capacity) {
+    queue* pq = (queue*)malloc(sizeof(queue) * capacity);
+    if (pq == NULL) {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    return pq;
+}
+void enqueue(queue* pq, int jobId, int length, int size) {
+    pq[size].jobId = jobId;
+    pq[size].length = length;
+}
+queue dequeue(queue* pq, int size) {
+    if (size == 0) {
+        printf("Queue is empty\n");
+        exit(1);
+    }
+    int maxIndex = 0;
+    for (int i = 1; i < size; i++) {
+        if (pq[i].length > pq[maxIndex].length) {
+            maxIndex = i;
+        }
+    }
+    queue job = pq[maxIndex];
+    for (int i = maxIndex; i < size - 1; i++) {
+        pq[i] = pq[i + 1];
+    }
+    return job;
+}
+int isEmpty(int size) {
+    return size == 0;
+}
+void printJob(queue job) {
+    printf("Job ID: %d, Length: %d\n", job.jobId, job.length);
+}
+int main()
+{
+    int jobs;
+    printf("Enter the number of printing jobs: ");
+    scanf("%d", &jobs);
+    queue* pq = initqueue(jobs);
+    printf("Enter job IDs and lengths:\n");
+    for (int i = 0; i < jobs; i++) {
+        int jobId, length;
+        printf("Job %d: ", i + 1);
+        scanf("%d %d", &jobId, &length);
+        enqueue(pq, jobId, length, i);
+    }
+    printf("\nPrinting Jobs:\n");
+    while (!isEmpty(jobs)) {
+        queue job = dequeue(pq, jobs);
+        printJob(job);
+        jobs--;
+    }
+    free(pq);
+    return 0;
+}
