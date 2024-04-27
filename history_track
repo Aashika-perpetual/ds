@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#define MAX_URL_LENGTH 100
+typedef struct WebPage {
+    char url[MAX_URL_LENGTH]; 
+    struct WebPage* prev; 
+    struct WebPage* next; 
+} WebPage;
+WebPage* createPage(const char* url) {
+    WebPage* page = (WebPage*)malloc(sizeof(WebPage));
+    if (page != NULL) {
+        strncpy(page->url, url, MAX_URL_LENGTH - 1);
+        page->url[MAX_URL_LENGTH - 1] = '\0'; 
+        page->prev = NULL;
+        page->next = NULL;
+    }
+    return page;
+}
+void visitPage(WebPage** current, const char* url) {
+    if (url == NULL || strlen(url) == 0) {
+        printf("Invalid URL\n");
+        return;
+    }
+    WebPage* newPage = createPage(url);
+    if (newPage != NULL) {
+        if (*current != NULL) {
+            newPage->prev = *current;
+            (*current)->next = newPage;
+        }
+        *current = newPage;
+    } else {
+        printf("Failed to create web page\n");
+    }
+}
+void navigateBack(WebPage** current) {
+    if (*current == NULL || (*current)->prev == NULL) {
+        printf("No previous page\n");
+        return;
+    }
+    *current = (*current)->prev;
+}
+void navigateForward(WebPage** current) {
+    if (*current == NULL || (*current)->next == NULL) {
+        printf("No next page\n");
+        return;
+    }
+    *current = (*current)->next;
+}
+void printCurrentPage(const WebPage* current) {
+    if (current == NULL) {
+        printf("No web page is currently visited\n");
+    } else {
+        printf("Current page: %s\n", current->url);
+    }
+}
+void freePages(WebPage* page) {
+    while (page != NULL) {
+        WebPage* temp = page;
+        page = page->prev;
+        free(temp);
+    }
+}
+int main() {
+    WebPage* current = NULL; 
+    char url[MAX_URL_LENGTH];
+    char choice;
+    do {
+        printf("Enter the URL of the web page (max %d characters): ", MAX_URL_LENGTH - 1);
+        scanf("%s", url);
+        visitPage(&current, url);
+        printf("Do you want to visit another web page? (y/n): ");
+        scanf(" %c", &choice);
+    } while (choice == 'y' || choice == 'Y');
+    navigateBack(&current);
+    printf("After navigating back:\n");
+    printCurrentPage(current);
+    navigateForward(&current);
+    printf("After navigating forward:\n");
+    printCurrentPage(current);
+    freePages(current);
+    return 0;
+}
